@@ -1,10 +1,12 @@
 # docs2mdd
 
-문서(Docs)를 마크다운(Markdown)으로 자동 변환하는 데몬 서비스
+[한국어](README.ko.md)
 
-## 📌 프로젝트 소개
+A daemon service that automatically converts documents to Markdown.
 
-`docs2mdd`는 지정된 소스 디렉토리를 감시하며, 문서 파일이 추가되면 자동으로 Markdown으로 변환하여 대상 디렉토리에 저장합니다.
+## Overview
+
+`docs2mdd` watches a designated source directory and automatically converts document files to Markdown format, saving them to the destination directory.
 
 ```
 src/                              dest/
@@ -14,102 +16,108 @@ src/                              dest/
 │                                 │       └── img_001.png
 ```
 
-## 🚀 기능
+## Features
 
-- [x] PDF → Markdown 변환 (이미지 추출 포함)
-- [ ] Word(.docx) → Markdown 변환
-- [ ] HTML → Markdown 변환
-- [x] 파일 시스템 실시간 감시
-- [x] 디렉토리 구조 유지
-- [x] 데몬 모드 지원
+- [x] PDF → Markdown conversion (with image extraction)
+- [x] Word (.docx) → Markdown conversion
+- [x] Hangul (.hwpx) → Markdown conversion (Korean word processor)
+- [ ] HTML → Markdown conversion
+- [x] Real-time file system monitoring
+- [x] Directory structure preservation
+- [x] Daemon mode support
 
-## 🛠️ 설치
+## Installation
 
 ```bash
-# 저장소 클론
+# Clone the repository
 git clone https://github.com/ghkim919/docs2mdd.git
 cd docs2mdd
 
-# 의존성 설치
+# Install dependencies
 pip install -e .
 
-# 또는 개발 모드
+# Or install with dev dependencies
 pip install -e ".[dev]"
 ```
 
-## 📖 사용법
+## Usage
 
-### 초기 설정
+### Initial Setup
 
 ```bash
-# 현재 디렉토리에 config.yaml 및 src/, dest/ 디렉토리 생성
+# Create config.yaml and src/, dest/ directories in current directory
 docs2mdd init
 ```
 
-### 데몬 실행
+### Running the Daemon
 
 ```bash
-# 데몬 시작
+# Start daemon
 docs2mdd start
 
-# 포그라운드에서 실행 (디버깅용)
+# Run in foreground (for debugging)
 docs2mdd start -f
 
-# 데몬 상태 확인
+# Check daemon status
 docs2mdd status
 
-# 데몬 중지
+# Stop daemon
 docs2mdd stop
 
-# 데몬 재시작
+# Restart daemon
 docs2mdd restart
 ```
 
-### 단일 파일 변환
+### Single File Conversion
 
 ```bash
-# 단일 파일 변환 (데몬 없이)
+# Convert a single file (without daemon)
 docs2mdd convert document.pdf
+docs2mdd convert document.docx
+docs2mdd convert document.hwpx
 
-# 출력 디렉토리 지정
+# Specify output directory
 docs2mdd convert document.pdf -o ./output
 ```
 
-### 설정 파일 (config.yaml)
+### Configuration (config.yaml)
 
 ```yaml
-# 소스 디렉토리 (감시할 디렉토리)
+# Source directory (directory to watch)
 src_dir: "./src"
 
-# 목적지 디렉토리 (변환된 파일 저장 위치)
+# Destination directory (where converted files are saved)
 dest_dir: "./dest"
 
-# 지원 확장자
+# Supported extensions
 supported_extensions:
   - ".pdf"
+  - ".docx"
+  - ".hwpx"
 
-# 에셋 디렉토리 이름
+# Assets directory name
 assets_dirname: "assets"
 
-# 로깅 설정
+# Logging settings
 logging:
   level: "INFO"  # DEBUG, INFO, WARNING, ERROR
-  file: null     # 로그 파일 경로
+  file: null     # Log file path
 
-# 데몬 설정
+# Daemon settings
 daemon:
   pid_file: "/tmp/docs2mdd.pid"
   poll_interval: 1.0
 ```
 
-## 📦 의존성
+## Dependencies
 
 - Python >= 3.9
-- watchdog - 파일 시스템 감시
-- PyMuPDF - PDF 처리
-- PyYAML - 설정 파일 파싱
-- click - CLI 인터페이스
+- watchdog - File system monitoring
+- PyMuPDF - PDF processing
+- python-docx - Word document processing
+- PyYAML - Configuration file parsing
+- click - CLI interface
 
-## 📄 라이선스
+## License
 
 MIT License
