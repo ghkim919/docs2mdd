@@ -100,7 +100,7 @@ def restart(ctx: click.Context) -> None:
 @click.pass_context
 def convert(ctx: click.Context, file_path: Path, output: Path | None) -> None:
     """단일 파일 변환 (데몬 없이)"""
-    from .converter import DocxConverter, HtmlConverter, HwpxConverter, PDFConverter
+    from .converter import DocxConverter, HtmlConverter, HwpxConverter, PDFConverter, PptxConverter
 
     config: Config = ctx.obj["config"]
 
@@ -110,7 +110,7 @@ def convert(ctx: click.Context, file_path: Path, output: Path | None) -> None:
     output.mkdir(parents=True, exist_ok=True)
 
     # 변환기 선택
-    converters = [PDFConverter(), DocxConverter(), HwpxConverter(), HtmlConverter()]
+    converters = [PDFConverter(), DocxConverter(), HwpxConverter(), HtmlConverter(), PptxConverter()]
     converter = None
     for c in converters:
         if c.can_handle(file_path):
@@ -127,6 +127,72 @@ def convert(ctx: click.Context, file_path: Path, output: Path | None) -> None:
 
     # Markdown 저장
     md_path = output / f"{file_path.stem}.md"
+    md_path.write_text(result.markdown, encoding="utf-8")
+    click.echo(f"Markdown 저장: {md_path}")
+
+    # 에셋 저장
+    if result.has_assets:
+        assets_dir = output / config.assets_dirname
+        assets_dir.mkdir(exist_ok=True)
+
+        for asset in result.assets:
+            asset_path = assets_dir / asset.filename
+            asset_path.write_bytes(asset.data)
+
+        click.echo(f"에셋 {len(result.assets)}개 저장: {assets_dir}")
+
+    click.echo("변환 완료!")
+
+
+@cli.command()
+@click.argument("url")
+@click.option(
+    "-o", "--output",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="출력 디렉토리 (기본: 현재 디렉토리)",
+)
+@click.option(
+    "-n", "--name",
+    type=str,
+    default=None,
+    help="출력 파일명 (확장자 제외, 기본: URL에서 추출)",
+)
+@click.pass_context
+def fetch(ctx: click.Context, url: str, output: Path | None, name: str | None) -> None:
+    """URL에서 HTML을 다운로드하여 Markdown으로 변환"""
+    from urllib.parse import urlparse
+
+    from .converter import HtmlConverter
+
+    config: Config = ctx.obj["config"]
+
+    # 파일명 결정
+    if name is None:
+        parsed = urlparse(url)
+        # URL 경로에서 파일명 추출
+        path_parts = parsed.path.strip("/").split("/")
+        if path_parts and path_parts[-1]:
+            name = path_parts[-1].rsplit(".", 1)[0]  # 확장자 제거
+        else:
+            name = parsed.netloc.replace(".", "_")  # 도메인을 파일명으로
+
+    # 출력 디렉토리 결정
+    if output is None:
+        output = Path.cwd() / name
+    output.mkdir(parents=True, exist_ok=True)
+
+    click.echo(f"다운로드 중: {url}")
+
+    converter = HtmlConverter()
+    try:
+        result = converter.convert_from_url(url)
+    except Exception as e:
+        click.echo(f"다운로드 실패: {e}", err=True)
+        ctx.exit(1)
+
+    # Markdown 저장
+    md_path = output / f"{name}.md"
     md_path.write_text(result.markdown, encoding="utf-8")
     click.echo(f"Markdown 저장: {md_path}")
 
@@ -169,6 +235,7 @@ supported_extensions:
   - ".hwpx"
   - ".html"
   - ".htm"
+  - ".pptx"
 
 # 에셋 디렉토리 이름
 assets_dirname: "assets"

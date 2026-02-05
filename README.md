@@ -20,8 +20,10 @@ src/                              dest/
 
 - [x] PDF → Markdown conversion (with image extraction)
 - [x] Word (.docx) → Markdown conversion
+- [x] PowerPoint (.pptx) → Markdown conversion (slide-by-slide)
 - [x] Hangul (.hwpx) → Markdown conversion (Korean word processor)
 - [x] HTML → Markdown conversion
+- [x] **URL fetch**: Download HTML from URL and convert to Markdown
 - [x] Real-time file system monitoring
 - [x] Directory structure preservation
 - [x] Daemon mode support
@@ -81,10 +83,24 @@ docs2mdd restart
 # Convert a single file (without daemon)
 docs2mdd convert document.pdf
 docs2mdd convert document.docx
+docs2mdd convert document.pptx
 docs2mdd convert document.hwpx
 
 # Specify output directory
 docs2mdd convert document.pdf -o ./output
+```
+
+### Fetch from URL
+
+```bash
+# Download HTML from URL and convert to Markdown
+docs2mdd fetch https://example.com/article.html
+
+# Specify output directory
+docs2mdd fetch https://example.com -o ./output
+
+# Specify output filename
+docs2mdd fetch https://example.com -n my_article
 ```
 
 ### Configuration (config.yaml)
@@ -100,6 +116,7 @@ dest_dir: "./dest"
 supported_extensions:
   - ".pdf"
   - ".docx"
+  - ".pptx"
   - ".hwpx"
   - ".html"
   - ".htm"
@@ -124,6 +141,7 @@ daemon:
 - watchdog - File system monitoring
 - PyMuPDF - PDF processing
 - python-docx - Word document processing
+- python-pptx - PowerPoint processing
 - beautifulsoup4 - HTML parsing
 - markdownify - HTML to Markdown conversion
 - PyYAML - Configuration file parsing

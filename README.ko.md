@@ -20,8 +20,10 @@ src/                              dest/
 
 - [x] PDF → Markdown 변환 (이미지 추출 포함)
 - [x] Word (.docx) → Markdown 변환
+- [x] PowerPoint (.pptx) → Markdown 변환 (슬라이드별 구분)
 - [x] 한글 (.hwpx) → Markdown 변환
 - [x] HTML → Markdown 변환
+- [x] **URL fetch**: URL에서 HTML 다운로드 후 Markdown 변환
 - [x] 파일 시스템 실시간 감시
 - [x] 디렉토리 구조 유지
 - [x] 데몬 모드 지원
@@ -81,10 +83,24 @@ docs2mdd restart
 # 단일 파일 변환 (데몬 없이)
 docs2mdd convert document.pdf
 docs2mdd convert document.docx
+docs2mdd convert document.pptx
 docs2mdd convert document.hwpx
 
 # 출력 디렉토리 지정
 docs2mdd convert document.pdf -o ./output
+```
+
+### URL에서 변환
+
+```bash
+# URL에서 HTML 다운로드 후 Markdown으로 변환
+docs2mdd fetch https://example.com/article.html
+
+# 출력 디렉토리 지정
+docs2mdd fetch https://example.com -o ./output
+
+# 출력 파일명 지정
+docs2mdd fetch https://example.com -n my_article
 ```
 
 ### 설정 파일 (config.yaml)
@@ -100,6 +116,7 @@ dest_dir: "./dest"
 supported_extensions:
   - ".pdf"
   - ".docx"
+  - ".pptx"
   - ".hwpx"
   - ".html"
   - ".htm"
@@ -124,6 +141,7 @@ daemon:
 - watchdog - 파일 시스템 감시
 - PyMuPDF - PDF 처리
 - python-docx - Word 문서 처리
+- python-pptx - PowerPoint 처리
 - beautifulsoup4 - HTML 파싱
 - markdownify - HTML → Markdown 변환
 - PyYAML - 설정 파일 파싱
