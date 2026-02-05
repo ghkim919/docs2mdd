@@ -127,6 +127,8 @@ class HwpxConverter(Converter):
 
         # 처리된 요소들 추적 (테이블 내부 요소 중복 방지)
         processed_elements: set[int] = set()
+        # 처리된 이미지 추적 (중복 방지)
+        processed_images: set[str] = set()
 
         # 모든 요소 순회
         for elem in root.iter():
@@ -153,6 +155,18 @@ class HwpxConverter(Converter):
                 if para_md:
                     markdown_parts.append(para_md)
                     assets.extend(para_assets)
+                    for asset in para_assets:
+                        processed_images.add(asset.filename)
+
+            # 독립 이미지(pic) 요소 처리 (단락 외부에 있는 경우)
+            elif elem.tag.endswith("}pic") or elem.tag == "pic":
+                img_md, img_asset, image_counter = self._process_image(
+                    elem, image_map, image_counter
+                )
+                if img_asset and img_asset.filename not in processed_images:
+                    markdown_parts.append(img_md)
+                    assets.append(img_asset)
+                    processed_images.add(img_asset.filename)
 
         return markdown_parts, assets, image_counter
 
@@ -212,34 +226,65 @@ class HwpxConverter(Converter):
         image_counter: int,
     ) -> tuple[str, Asset | None, int]:
         """이미지 요소를 처리하여 Asset 생성"""
-        # binItem 요소에서 참조 파일명 찾기
-        bin_item = None
+        bin_ref = None
+
+        # 방법 1: binItem 요소에서 참조 파일명 찾기
         for elem in pic_elem.iter():
             if elem.tag.endswith("}binItem") or elem.tag == "binItem":
-                bin_item = elem
-                break
+                bin_ref = (
+                    elem.get("src")
+                    or elem.get("href")
+                    or elem.get("{http://www.w3.org/1999/xlink}href")
+                )
+                if not bin_ref:
+                    bin_id = elem.get("id") or elem.get("binaryItemIDRef")
+                    if bin_id:
+                        for filename in image_map:
+                            if filename.startswith(bin_id) or bin_id in filename:
+                                bin_ref = filename
+                                break
+                if bin_ref:
+                    break
 
-        if bin_item is None:
-            return "", None, image_counter
-
-        # 파일 참조 추출 (href 또는 src 속성)
-        bin_ref = (
-            bin_item.get("src")
-            or bin_item.get("href")
-            or bin_item.get("{http://www.w3.org/1999/xlink}href")
-        )
-
+        # 방법 2: imageRect 또는 img 요소에서 찾기
         if not bin_ref:
-            # binItem id로 BinData에서 찾기
-            bin_id = bin_item.get("id") or bin_item.get("binaryItemIDRef")
-            if bin_id:
-                # BinData에서 해당 ID로 시작하는 파일 찾기
-                for filename in image_map:
-                    if filename.startswith(bin_id) or bin_id in filename:
-                        bin_ref = filename
+            for elem in pic_elem.iter():
+                if elem.tag.endswith("}imageRect") or elem.tag == "imageRect":
+                    bin_ref = elem.get("binaryItemIDRef")
+                    if bin_ref:
+                        for filename in image_map:
+                            if filename.startswith(bin_ref) or bin_ref in filename:
+                                bin_ref = filename
+                                break
                         break
 
+        # 방법 3: pic 요소 자체의 속성 확인
         if not bin_ref:
+            for attr in ["binaryItemIDRef", "id", "itemId"]:
+                ref_id = pic_elem.get(attr)
+                if ref_id:
+                    for filename in image_map:
+                        if filename.startswith(ref_id) or ref_id in filename:
+                            bin_ref = filename
+                            break
+                if bin_ref:
+                    break
+
+        # 방법 4: shapeComponent에서 찾기
+        if not bin_ref:
+            for elem in pic_elem.iter():
+                if "shapeComponent" in elem.tag or "ShapeComponent" in elem.tag:
+                    ref_id = elem.get("binaryItemIDRef") or elem.get("href")
+                    if ref_id:
+                        for filename in image_map:
+                            if filename.startswith(ref_id) or ref_id in filename:
+                                bin_ref = filename
+                                break
+                if bin_ref:
+                    break
+
+        if not bin_ref:
+            logger.debug(f"이미지 참조를 찾을 수 없음: {ET.tostring(pic_elem, encoding='unicode')[:200]}")
             return "", None, image_counter
 
         # 파일명만 추출

@@ -94,11 +94,16 @@ class DocxConverter(Converter):
         assets: list[Asset] = []
         text = para.text.strip()
 
-        # 인라인 이미지 확인
+        # 이미지 확인 (inline 및 anchor 모두 처리)
         for run in para.runs:
-            for drawing in run.element.findall(
+            # inline 이미지와 anchor(floating) 이미지 모두 찾기
+            drawings = run.element.findall(
                 ".//{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}inline"
-            ):
+            ) + run.element.findall(
+                ".//{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}anchor"
+            )
+
+            for drawing in drawings:
                 blip = drawing.find(
                     ".//{http://schemas.openxmlformats.org/drawingml/2006/main}blip"
                 )

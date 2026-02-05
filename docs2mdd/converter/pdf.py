@@ -37,8 +37,40 @@ class PDFConverter(Converter):
                 # 페이지 구분 주석
                 markdown_parts.append(f"\n<!-- Page {page_num} -->\n")
 
-                # 텍스트 추출
-                text = page.get_text("text")
+                # 테이블 추출 시도 (PyMuPDF 1.23.0+)
+                table_bboxes: list[tuple[float, float, float, float]] = []
+                try:
+                    tables = page.find_tables()
+                    for table in tables:
+                        table_md = self._process_table(table)
+                        if table_md:
+                            markdown_parts.append(table_md)
+                            table_bboxes.append(table.bbox)
+                except AttributeError:
+                    # find_tables를 지원하지 않는 버전
+                    pass
+                except Exception as e:
+                    logger.debug(f"테이블 추출 실패 (page {page_num}): {e}")
+
+                # 텍스트 추출 (테이블 영역 제외)
+                if table_bboxes:
+                    # 테이블 영역을 제외한 텍스트 블록만 추출
+                    text_parts = []
+                    blocks = page.get_text("blocks")
+                    for block in blocks:
+                        block_rect = fitz.Rect(block[:4])
+                        in_table = False
+                        for table_bbox in table_bboxes:
+                            table_rect = fitz.Rect(table_bbox)
+                            if block_rect.intersects(table_rect):
+                                in_table = True
+                                break
+                        if not in_table and block[4].strip():
+                            text_parts.append(block[4])
+                    text = "\n".join(text_parts)
+                else:
+                    text = page.get_text("text")
+
                 if text.strip():
                     markdown_parts.append(text)
 
@@ -80,6 +112,36 @@ class PDFConverter(Converter):
         logger.info(f"PDF 변환 완료: {len(assets)}개 이미지 추출")
 
         return ConversionResult(markdown=markdown, assets=assets)
+
+    def _process_table(self, table) -> str:
+        """PyMuPDF 테이블을 Markdown 테이블로 변환"""
+        try:
+            # 테이블 데이터 추출
+            data = table.extract()
+            if not data or not data[0]:
+                return ""
+
+            md_rows: list[str] = []
+            for row in data:
+                # 셀 텍스트 정리 (None 처리 및 줄바꿈 제거)
+                cells = [
+                    (cell or "").replace("\n", " ").strip()
+                    for cell in row
+                ]
+                md_rows.append("| " + " | ".join(cells) + " |")
+
+            if not md_rows:
+                return ""
+
+            # 헤더 구분선 추가
+            col_count = len(data[0])
+            separator = "| " + " | ".join(["---"] * col_count) + " |"
+            md_rows.insert(1, separator)
+
+            return "\n".join(md_rows) + "\n"
+        except Exception as e:
+            logger.debug(f"테이블 변환 실패: {e}")
+            return ""
 
     def _cleanup_markdown(self, text: str) -> str:
         """Markdown 텍스트 정리"""

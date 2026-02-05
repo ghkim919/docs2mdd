@@ -26,6 +26,13 @@ src/                              dest/
 - [x] Directory structure preservation
 - [x] Daemon mode support
 
+## Limitations
+
+### HWPX (Hangul) Format
+- **Image extraction may not work properly**: HWPX is a proprietary format by Hancom, and the internal structure is not officially documented. Image references vary depending on the document version and creation method, so some images may not be extracted.
+- **Tables are supported**, but complex merged cells may not render correctly.
+- For best results, consider exporting to PDF or DOCX from Hangul before conversion.
+
 ## Installation
 
 ```bash
