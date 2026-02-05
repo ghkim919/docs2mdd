@@ -24,7 +24,7 @@ class DaemonConfig:
 class Config:
     src_dir: Path
     dest_dir: Path
-    supported_extensions: list[str] = field(default_factory=lambda: [".pdf"])
+    supported_extensions: list[str] = field(default_factory=lambda: [".pdf", ".docx"])
     assets_dirname: str = "assets"
     logging: LoggingConfig = field(default_factory=LoggingConfig)
     daemon: DaemonConfig = field(default_factory=DaemonConfig)

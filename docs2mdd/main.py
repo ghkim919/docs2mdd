@@ -100,8 +100,7 @@ def restart(ctx: click.Context) -> None:
 @click.pass_context
 def convert(ctx: click.Context, file_path: Path, output: Path | None) -> None:
     """단일 파일 변환 (데몬 없이)"""
-    from .converter import PDFConverter
-    from .watcher import ConversionHandler
+    from .converter import DocxConverter, PDFConverter
 
     config: Config = ctx.obj["config"]
 
@@ -111,8 +110,14 @@ def convert(ctx: click.Context, file_path: Path, output: Path | None) -> None:
     output.mkdir(parents=True, exist_ok=True)
 
     # 변환기 선택
-    converter = PDFConverter()
-    if not converter.can_handle(file_path):
+    converters = [PDFConverter(), DocxConverter()]
+    converter = None
+    for c in converters:
+        if c.can_handle(file_path):
+            converter = c
+            break
+
+    if converter is None:
         click.echo(f"지원하지 않는 파일 형식: {file_path.suffix}", err=True)
         ctx.exit(1)
 
@@ -160,6 +165,7 @@ dest_dir: "./dest"
 # 지원 확장자
 supported_extensions:
   - ".pdf"
+  - ".docx"
 
 # 에셋 디렉토리 이름
 assets_dirname: "assets"
