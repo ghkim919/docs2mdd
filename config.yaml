@@ -1,0 +1,26 @@
+# docs2mdd 설정 파일
+
+# 소스 디렉토리 (감시할 디렉토리)
+src_dir: "./src"
+
+# 목적지 디렉토리 (변환된 파일 저장 위치)
+dest_dir: "./dest"
+
+# 지원 확장자
+supported_extensions:
+  - ".pdf"
+  # - ".docx"  # 추후 지원 예정
+  # - ".html"  # 추후 지원 예정
+
+# 에셋 디렉토리 이름 (이미지 저장 폴더)
+assets_dirname: "assets"
+
+# 로깅 설정
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: null     # 로그 파일 경로 (null이면 stdout)
+
+# 데몬 설정
+daemon:
+  pid_file: "/tmp/docs2mdd.pid"
+  poll_interval: 1.0  # 파일 감시 폴링 간격 (초)
