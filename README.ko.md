@@ -21,7 +21,7 @@ src/                              dest/
 - [x] PDF → Markdown 변환 (이미지 추출 포함)
 - [x] Word (.docx) → Markdown 변환
 - [x] 한글 (.hwpx) → Markdown 변환
-- [ ] HTML → Markdown 변환
+- [x] HTML → Markdown 변환
 - [x] 파일 시스템 실시간 감시
 - [x] 디렉토리 구조 유지
 - [x] 데몬 모드 지원
@@ -101,6 +101,8 @@ supported_extensions:
   - ".pdf"
   - ".docx"
   - ".hwpx"
+  - ".html"
+  - ".htm"
 
 # 에셋 디렉토리 이름
 assets_dirname: "assets"
@@ -122,6 +124,8 @@ daemon:
 - watchdog - 파일 시스템 감시
 - PyMuPDF - PDF 처리
 - python-docx - Word 문서 처리
+- beautifulsoup4 - HTML 파싱
+- markdownify - HTML → Markdown 변환
 - PyYAML - 설정 파일 파싱
 - click - CLI 인터페이스
 

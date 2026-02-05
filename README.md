@@ -21,7 +21,7 @@ src/                              dest/
 - [x] PDF → Markdown conversion (with image extraction)
 - [x] Word (.docx) → Markdown conversion
 - [x] Hangul (.hwpx) → Markdown conversion (Korean word processor)
-- [ ] HTML → Markdown conversion
+- [x] HTML → Markdown conversion
 - [x] Real-time file system monitoring
 - [x] Directory structure preservation
 - [x] Daemon mode support
@@ -101,6 +101,8 @@ supported_extensions:
   - ".pdf"
   - ".docx"
   - ".hwpx"
+  - ".html"
+  - ".htm"
 
 # Assets directory name
 assets_dirname: "assets"
@@ -122,6 +124,8 @@ daemon:
 - watchdog - File system monitoring
 - PyMuPDF - PDF processing
 - python-docx - Word document processing
+- beautifulsoup4 - HTML parsing
+- markdownify - HTML to Markdown conversion
 - PyYAML - Configuration file parsing
 - click - CLI interface
 

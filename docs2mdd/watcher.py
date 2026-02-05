@@ -9,7 +9,7 @@ from watchdog.events import FileCreatedEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
 from .config import Config
-from .converter import ConversionResult, Converter, DocxConverter, HwpxConverter, PDFConverter
+from .converter import ConversionResult, Converter, DocxConverter, HtmlConverter, HwpxConverter, PDFConverter
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +145,7 @@ class FileWatcher:
 
     def __init__(self, config: Config):
         self.config = config
-        self.converters: list[Converter] = [PDFConverter(), DocxConverter(), HwpxConverter()]
+        self.converters: list[Converter] = [PDFConverter(), DocxConverter(), HwpxConverter(), HtmlConverter()]
         self.observer = Observer()
         self.handler = ConversionHandler(config, self.converters)
 

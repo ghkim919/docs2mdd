@@ -2,7 +2,15 @@
 
 from .base import ConversionResult, Converter
 from .docx import DocxConverter
+from .html import HtmlConverter
 from .hwpx import HwpxConverter
 from .pdf import PDFConverter
 
-__all__ = ["Converter", "ConversionResult", "DocxConverter", "HwpxConverter", "PDFConverter"]
+__all__ = [
+    "Converter",
+    "ConversionResult",
+    "DocxConverter",
+    "HtmlConverter",
+    "HwpxConverter",
+    "PDFConverter",
+]
