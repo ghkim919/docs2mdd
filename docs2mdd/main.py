@@ -100,7 +100,7 @@ def restart(ctx: click.Context) -> None:
 @click.pass_context
 def convert(ctx: click.Context, file_path: Path, output: Path | None) -> None:
     """단일 파일 변환 (데몬 없이)"""
-    from .converter import DocxConverter, PDFConverter
+    from .converter import DocxConverter, HwpxConverter, PDFConverter
 
     config: Config = ctx.obj["config"]
 
@@ -110,7 +110,7 @@ def convert(ctx: click.Context, file_path: Path, output: Path | None) -> None:
     output.mkdir(parents=True, exist_ok=True)
 
     # 변환기 선택
-    converters = [PDFConverter(), DocxConverter()]
+    converters = [PDFConverter(), DocxConverter(), HwpxConverter()]
     converter = None
     for c in converters:
         if c.can_handle(file_path):
@@ -166,6 +166,7 @@ dest_dir: "./dest"
 supported_extensions:
   - ".pdf"
   - ".docx"
+  - ".hwpx"
 
 # 에셋 디렉토리 이름
 assets_dirname: "assets"
