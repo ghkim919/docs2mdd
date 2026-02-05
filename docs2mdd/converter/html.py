@@ -29,9 +29,15 @@ class CustomMarkdownConverter(MarkdownConverter):
         alt = el.get("alt", "")
 
         if self.image_handler and src:
-            new_src = self.image_handler(src)
-            if new_src:
-                src = new_src
+            result = self.image_handler(src)
+            if result is None:
+                # 핸들러가 None 반환 = 처리 불가, 원본 유지
+                return f"![{alt}]({src})"
+            elif result == "":
+                # 빈 문자열 = 이미지 제거 (주석으로 대체)
+                return f"<!-- 이미지 누락: {src} -->"
+            else:
+                src = result
 
         return f"![{alt}]({src})"
 
@@ -70,6 +76,7 @@ class HtmlConverter(Converter):
         assets: list[Asset] = []
         image_counter = 0
         image_map: dict[str, str] = {}  # 원본 src -> 새 경로 매핑
+        failed_images: set[str] = set()  # 추출 실패한 이미지
 
         for img in soup.find_all("img"):
             src = img.get("src", "")
@@ -82,10 +89,21 @@ class HtmlConverter(Converter):
                 assets.append(asset)
                 image_map[src] = f"./assets/{asset.filename}"
                 logger.debug(f"이미지 추출: {asset.filename}")
+            else:
+                failed_images.add(src)
 
         # 이미지 핸들러 생성
         def image_handler(src: str) -> str | None:
-            return image_map.get(src)
+            if src in image_map:
+                return image_map[src]
+            # 추출 실패한 이미지
+            if src in failed_images:
+                parsed = urlparse(src)
+                if parsed.scheme in ("http", "https"):
+                    return src  # URL은 그대로 유지
+                # 로컬 경로는 주석으로 대체 (빈 문자열 반환)
+                return ""
+            return None
 
         # Markdown 변환
         converter = CustomMarkdownConverter(
