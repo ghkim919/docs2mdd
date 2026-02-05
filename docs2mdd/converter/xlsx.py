@@ -7,7 +7,7 @@ from openpyxl import load_workbook
 from openpyxl.cell.cell import Cell
 from openpyxl.worksheet.worksheet import Worksheet
 
-from .base import Asset, ConversionResult, Converter
+from .base import Asset, ConversionResult, Converter, Metadata
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +31,13 @@ class XlsxConverter(Converter):
 
         markdown_parts: list[str] = []
 
-        wb = load_workbook(str(file_path), read_only=True, data_only=True)
+        # read_only=False로 열어야 properties 접근 가능
+        wb = load_workbook(str(file_path), read_only=False, data_only=True)
         sheet_names = wb.sheetnames
         total_sheets = len(sheet_names)
+
+        # 메타데이터 추출
+        metadata = self._extract_metadata(wb, total_sheets)
 
         for sheet_idx, sheet_name in enumerate(sheet_names, start=1):
             ws = wb[sheet_name]
@@ -60,7 +64,24 @@ class XlsxConverter(Converter):
 
         logger.info(f"XLSX 변환 완료: {total_sheets}개 시트")
 
-        return ConversionResult(markdown=markdown, assets=[])
+        return ConversionResult(markdown=markdown, assets=[], metadata=metadata)
+
+    def _extract_metadata(self, wb, total_sheets: int) -> Metadata:
+        """XLSX 메타데이터 추출"""
+        props = wb.properties
+
+        def format_date(dt) -> str | None:
+            if dt:
+                return dt.strftime("%Y-%m-%d")
+            return None
+
+        return Metadata(
+            title=props.title or None,
+            author=props.creator or None,
+            created=format_date(props.created),
+            modified=format_date(props.modified),
+            sheets=total_sheets,
+        )
 
     def _process_sheet(self, ws: Worksheet) -> str:
         """워크시트를 Markdown 테이블로 변환"""

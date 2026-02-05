@@ -8,7 +8,7 @@ from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from docx.table import Table
 from docx.text.paragraph import Paragraph
 
-from .base import Asset, ConversionResult, Converter
+from .base import Asset, ConversionResult, Converter, Metadata
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +34,9 @@ class DocxConverter(Converter):
         markdown_parts: list[str] = []
         assets: list[Asset] = []
         image_counter = 0
+
+        # 메타데이터 추출
+        metadata = self._extract_metadata(doc)
 
         # 이미지 관계 매핑 (rId -> 이미지 데이터)
         image_map = self._extract_images(doc)
@@ -63,7 +66,23 @@ class DocxConverter(Converter):
 
         logger.info(f"DOCX 변환 완료: {len(assets)}개 이미지 추출")
 
-        return ConversionResult(markdown=markdown, assets=assets)
+        return ConversionResult(markdown=markdown, assets=assets, metadata=metadata)
+
+    def _extract_metadata(self, doc: Document) -> Metadata:
+        """DOCX 메타데이터 추출"""
+        props = doc.core_properties
+
+        def format_date(dt) -> str | None:
+            if dt:
+                return dt.strftime("%Y-%m-%d")
+            return None
+
+        return Metadata(
+            title=props.title or None,
+            author=props.author or None,
+            created=format_date(props.created),
+            modified=format_date(props.modified),
+        )
 
     def _extract_images(self, doc: Document) -> dict[str, tuple[bytes, str]]:
         """문서에서 이미지 추출하여 rId -> (data, ext) 매핑 반환"""

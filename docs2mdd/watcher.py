@@ -119,9 +119,10 @@ class ConversionHandler(FileSystemEventHandler):
         # 변환 실행
         result: ConversionResult = converter.convert(file_path)
 
-        # Markdown 파일 저장
+        # Markdown 파일 저장 (frontmatter 포함)
         md_path = output_dir / f"{file_path.stem}.md"
-        md_path.write_text(result.markdown, encoding="utf-8")
+        markdown_with_frontmatter = result.to_markdown_with_frontmatter(source=file_path.name)
+        md_path.write_text(markdown_with_frontmatter, encoding="utf-8")
         logger.info(f"Markdown 저장: {md_path}")
 
         # 에셋 저장

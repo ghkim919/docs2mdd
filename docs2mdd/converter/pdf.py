@@ -5,7 +5,7 @@ from pathlib import Path
 
 import fitz  # PyMuPDF
 
-from .base import Asset, ConversionResult, Converter
+from .base import Asset, ConversionResult, Converter, Metadata
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,9 @@ class PDFConverter(Converter):
         markdown_parts: list[str] = []
         assets: list[Asset] = []
         image_counter = 0
+
+        # 메타데이터 추출
+        metadata = self._extract_metadata(doc)
 
         try:
             for page_num, page in enumerate(doc, start=1):
@@ -111,7 +114,30 @@ class PDFConverter(Converter):
 
         logger.info(f"PDF 변환 완료: {len(assets)}개 이미지 추출")
 
-        return ConversionResult(markdown=markdown, assets=assets)
+        return ConversionResult(markdown=markdown, assets=assets, metadata=metadata)
+
+    def _extract_metadata(self, doc) -> Metadata:
+        """PDF 메타데이터 추출"""
+        meta = doc.metadata or {}
+
+        # 날짜 형식 변환 (D:20240101120000 -> 2024-01-01)
+        def parse_pdf_date(date_str: str | None) -> str | None:
+            if not date_str:
+                return None
+            # D:YYYYMMDDHHmmSS 형식
+            if date_str.startswith("D:"):
+                date_str = date_str[2:]
+            if len(date_str) >= 8:
+                return f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:8]}"
+            return None
+
+        return Metadata(
+            title=meta.get("title") or None,
+            author=meta.get("author") or None,
+            created=parse_pdf_date(meta.get("creationDate")),
+            modified=parse_pdf_date(meta.get("modDate")),
+            pages=doc.page_count,
+        )
 
     def _process_table(self, table) -> str:
         """PyMuPDF 테이블을 Markdown 테이블로 변환"""

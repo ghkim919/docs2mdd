@@ -11,7 +11,7 @@ from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup, Tag
 from markdownify import MarkdownConverter
 
-from .base import Asset, ConversionResult, Converter
+from .base import Asset, ConversionResult, Converter, Metadata
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +111,9 @@ class HtmlConverter(Converter):
         # BeautifulSoup으로 파싱
         soup = BeautifulSoup(html_content, "html.parser")
 
+        # 메타데이터 추출 (head 제거 전)
+        metadata = self._extract_metadata(soup)
+
         # body를 먼저 찾아서 별도로 보존 (비표준 HTML에서 head 제거 시 body도 사라지는 문제 방지)
         body = soup.find("body")
         if body:
@@ -174,7 +177,24 @@ class HtmlConverter(Converter):
 
         logger.info(f"HTML 변환 완료: {len(assets)}개 이미지 추출")
 
-        return ConversionResult(markdown=markdown, assets=assets)
+        return ConversionResult(markdown=markdown, assets=assets, metadata=metadata)
+
+    def _extract_metadata(self, soup: BeautifulSoup) -> Metadata:
+        """HTML 메타데이터 추출"""
+        title = None
+        author = None
+
+        # title 태그에서 제목 추출
+        title_tag = soup.find("title")
+        if title_tag:
+            title = title_tag.get_text().strip() or None
+
+        # meta 태그에서 author 추출
+        author_meta = soup.find("meta", attrs={"name": "author"})
+        if author_meta:
+            author = author_meta.get("content", "").strip() or None
+
+        return Metadata(title=title, author=author)
 
     def _process_image_with_context(
         self,

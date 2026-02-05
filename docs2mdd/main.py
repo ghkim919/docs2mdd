@@ -125,9 +125,10 @@ def convert(ctx: click.Context, file_path: Path, output: Path | None) -> None:
 
     result = converter.convert(file_path)
 
-    # Markdown 저장
+    # Markdown 저장 (frontmatter 포함)
     md_path = output / f"{file_path.stem}.md"
-    md_path.write_text(result.markdown, encoding="utf-8")
+    markdown_with_frontmatter = result.to_markdown_with_frontmatter(source=file_path.name)
+    md_path.write_text(markdown_with_frontmatter, encoding="utf-8")
     click.echo(f"Markdown 저장: {md_path}")
 
     # 에셋 저장
@@ -191,9 +192,10 @@ def fetch(ctx: click.Context, url: str, output: Path | None, name: str | None) -
         click.echo(f"다운로드 실패: {e}", err=True)
         ctx.exit(1)
 
-    # Markdown 저장
+    # Markdown 저장 (frontmatter 포함)
     md_path = output / f"{name}.md"
-    md_path.write_text(result.markdown, encoding="utf-8")
+    markdown_with_frontmatter = result.to_markdown_with_frontmatter(source=url)
+    md_path.write_text(markdown_with_frontmatter, encoding="utf-8")
     click.echo(f"Markdown 저장: {md_path}")
 
     # 에셋 저장

@@ -25,6 +25,7 @@ src/                              dest/
 - [x] 한글 (.hwpx) → Markdown 변환
 - [x] HTML → Markdown 변환
 - [x] **URL fetch**: URL에서 HTML 다운로드 후 Markdown 변환
+- [x] **Frontmatter 메타데이터**: 문서 메타데이터 자동 추출 (제목, 작성자, 날짜 등)
 - [x] 파일 시스템 실시간 감시
 - [x] 디렉토리 구조 유지
 - [x] 데몬 모드 지원

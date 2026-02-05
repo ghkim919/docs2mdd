@@ -25,6 +25,7 @@ src/                              dest/
 - [x] Hangul (.hwpx) → Markdown conversion (Korean word processor)
 - [x] HTML → Markdown conversion
 - [x] **URL fetch**: Download HTML from URL and convert to Markdown
+- [x] **Frontmatter metadata**: Automatically extract document metadata (title, author, dates, etc.)
 - [x] Real-time file system monitoring
 - [x] Directory structure preservation
 - [x] Daemon mode support

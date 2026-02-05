@@ -7,7 +7,7 @@ from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.util import Inches
 
-from .base import Asset, ConversionResult, Converter
+from .base import Asset, ConversionResult, Converter, Metadata
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +35,9 @@ class PptxConverter(Converter):
 
         prs = Presentation(str(file_path))
         total_slides = len(prs.slides)
+
+        # 메타데이터 추출
+        metadata = self._extract_metadata(prs, total_slides)
 
         for slide_idx, slide in enumerate(prs.slides, start=1):
             slide_parts: list[str] = []
@@ -96,7 +99,24 @@ class PptxConverter(Converter):
 
         logger.info(f"PPTX 변환 완료: {total_slides}개 슬라이드, {len(assets)}개 이미지 추출")
 
-        return ConversionResult(markdown=markdown, assets=assets)
+        return ConversionResult(markdown=markdown, assets=assets, metadata=metadata)
+
+    def _extract_metadata(self, prs, total_slides: int) -> Metadata:
+        """PPTX 메타데이터 추출"""
+        props = prs.core_properties
+
+        def format_date(dt) -> str | None:
+            if dt:
+                return dt.strftime("%Y-%m-%d")
+            return None
+
+        return Metadata(
+            title=props.title or None,
+            author=props.author or None,
+            created=format_date(props.created),
+            modified=format_date(props.modified),
+            slides=total_slides,
+        )
 
     def _get_title_shape(self, slide):
         """슬라이드의 제목 shape 반환"""
