@@ -21,6 +21,7 @@ src/                              dest/
 - [x] PDF → Markdown conversion (with image extraction)
 - [x] Word (.docx) → Markdown conversion
 - [x] PowerPoint (.pptx) → Markdown conversion (slide-by-slide)
+- [x] Excel (.xlsx) → Markdown conversion (sheet-by-sheet tables)
 - [x] Hangul (.hwpx) → Markdown conversion (Korean word processor)
 - [x] HTML → Markdown conversion
 - [x] **URL fetch**: Download HTML from URL and convert to Markdown
@@ -77,6 +78,7 @@ docs2mdd restart
 docs2mdd convert document.pdf
 docs2mdd convert document.docx
 docs2mdd convert document.pptx
+docs2mdd convert document.xlsx
 docs2mdd convert document.hwpx
 
 # Specify output directory
@@ -110,6 +112,7 @@ supported_extensions:
   - ".pdf"
   - ".docx"
   - ".pptx"
+  - ".xlsx"
   - ".hwpx"
   - ".html"
   - ".htm"
@@ -135,6 +138,7 @@ daemon:
 - PyMuPDF - PDF processing
 - python-docx - Word document processing
 - python-pptx - PowerPoint processing
+- openpyxl - Excel processing
 - beautifulsoup4 - HTML parsing
 - markdownify - HTML to Markdown conversion
 - PyYAML - Configuration file parsing

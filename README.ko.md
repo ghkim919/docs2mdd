@@ -21,6 +21,7 @@ src/                              dest/
 - [x] PDF → Markdown 변환 (이미지 추출 포함)
 - [x] Word (.docx) → Markdown 변환
 - [x] PowerPoint (.pptx) → Markdown 변환 (슬라이드별 구분)
+- [x] Excel (.xlsx) → Markdown 변환 (시트별 테이블)
 - [x] 한글 (.hwpx) → Markdown 변환
 - [x] HTML → Markdown 변환
 - [x] **URL fetch**: URL에서 HTML 다운로드 후 Markdown 변환
@@ -77,6 +78,7 @@ docs2mdd restart
 docs2mdd convert document.pdf
 docs2mdd convert document.docx
 docs2mdd convert document.pptx
+docs2mdd convert document.xlsx
 docs2mdd convert document.hwpx
 
 # 출력 디렉토리 지정
@@ -110,6 +112,7 @@ supported_extensions:
   - ".pdf"
   - ".docx"
   - ".pptx"
+  - ".xlsx"
   - ".hwpx"
   - ".html"
   - ".htm"
@@ -135,6 +138,7 @@ daemon:
 - PyMuPDF - PDF 처리
 - python-docx - Word 문서 처리
 - python-pptx - PowerPoint 처리
+- openpyxl - Excel 처리
 - beautifulsoup4 - HTML 파싱
 - markdownify - HTML → Markdown 변환
 - PyYAML - 설정 파일 파싱

@@ -6,6 +6,7 @@ from .html import HtmlConverter
 from .hwpx import HwpxConverter
 from .pdf import PDFConverter
 from .pptx import PptxConverter
+from .xlsx import XlsxConverter
 
 __all__ = [
     "Converter",
@@ -15,4 +16,5 @@ __all__ = [
     "HwpxConverter",
     "PDFConverter",
     "PptxConverter",
+    "XlsxConverter",
 ]

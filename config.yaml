@@ -10,10 +10,11 @@ dest_dir: "./dest"
 supported_extensions:
   - ".pdf"
   - ".docx"
+  - ".pptx"
+  - ".xlsx"
   - ".hwpx"
   - ".html"
   - ".htm"
-  - ".pptx"
 
 # 에셋 디렉토리 이름 (이미지 저장 폴더)
 assets_dirname: "assets"
